@@ -8,7 +8,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 
-int main(int argc, char **argv){
+int main(int agrc, char **argv){
     const char *port = "8080";
     struct addrinfo hints;
     struct addrinfo *res;
@@ -42,22 +42,14 @@ int main(int argc, char **argv){
     }
 
     if (bindRet == 0){
-        int listenRet = listen(sfd, 2);
-        if (listenRet == -1){
-            perror("Failed to listen\n");
+        int conRet = connect(sfd, rp->ai_add, rp->ai_addrlen);
+        if (conRet == -1){
+            perror("Failed to connect");
             exit(EXIT_FAILURE);
         }
 
-        int afd = accept(sfd, rp->ai_addr, &rp->ai_addrlen);
-        if (afd == -1){
-            perror("Failed to accept\n");
-            exit(EXIT_FAILURE);
-        }
-
-        
+        else printf("Connection succesfull!\n");
     }
-
-    freeaddrinfo(res);
 
     return 0;
 }
