@@ -29,26 +29,15 @@ int main(int agrc, char **argv){
         if (sfd == -1)
             continue;
 
-        bindRet = bind(sfd, rp->ai_addr, rp->ai_addrlen);
-        if (bindRet == 0)
-            break;
-
-        close(sfd);
-    }
-
-    if (rp == NULL) {
-        fprintf(stderr, "Could not bind\n");
-        exit(EXIT_FAILURE);
-    }
-
-    if (bindRet == 0){
-        int conRet = connect(sfd, rp->ai_add, rp->ai_addrlen);
+        int conRet = connect(sfd, rp->ai_addr, rp->ai_addrlen);
         if (conRet == -1){
             perror("Failed to connect");
             exit(EXIT_FAILURE);
         }
 
         else printf("Connection succesfull!\n");
+
+        close(sfd);
     }
 
     return 0;
