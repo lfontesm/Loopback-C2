@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <netdb.h>
 
-int manage_connection(int sfd, struct sockaddr *addr);
+int manage_connection(int sfd, struct sockaddr *addr, socklen_t addrlen);
+int sanitize_input(char *userInput, int afd);
 
 #endif // SERVER_CON

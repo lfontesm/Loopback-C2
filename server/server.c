@@ -55,8 +55,8 @@ int main(int argc, char **argv){
             exit(EXIT_FAILURE);
         }
 
-        struct sockaddr connectionStruct;
-        manage_connection(afd, &connectionStruct);
+        // struct sockaddr connectionStruct;
+        manage_connection(sfd, rp->ai_addr, rp->ai_addrlen);
     }
 
     freeaddrinfo(res);

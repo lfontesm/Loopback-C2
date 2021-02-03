@@ -42,5 +42,6 @@ int main(int agrc, char **argv){
         close(sfd);
     }
 
+    freeaddrinfo(res);
     return 0;
 }
