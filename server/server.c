@@ -18,7 +18,7 @@ int main(int argc, char **argv){
     hints.ai_socktype = SOCK_STREAM;
     
     int getAddrInfoRet;
-    if ( getAddrInfoRet = getaddrinfo(NULL, port, &hints, &res) != 0 ){
+    if ( (getAddrInfoRet = getaddrinfo(NULL, port, &hints, &res)) != 0 ){
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(getAddrInfoRet));
         exit(EXIT_FAILURE);
     }

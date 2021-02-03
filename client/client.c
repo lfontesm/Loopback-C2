@@ -18,13 +18,13 @@ int main(int agrc, char **argv){
     hints.ai_socktype = SOCK_STREAM;
     
     int getAddrInfoRet;
-    if ( getAddrInfoRet = getaddrinfo(NULL, port, &hints, &res) != 0 ){
+    if ( (getAddrInfoRet = getaddrinfo(NULL, port, &hints, &res)) != 0 ){
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(getAddrInfoRet));
         exit(EXIT_FAILURE);
     }
 
     struct addrinfo *rp;
-    int sfd, bindRet;
+    int sfd;
     for (rp = res; rp != NULL; rp = rp->ai_next){
         sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
         if (sfd == -1)

@@ -11,6 +11,7 @@ int manage_connection(int sfd, struct sockaddr *addr){
         exit(EXIT_FAILURE);
     }
 
+// TODO: stablish a more refined communication protocol
     printf("Recieved msg: %s\n", buf);
 
     return 1;

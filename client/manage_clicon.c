@@ -10,4 +10,6 @@ int manage_connection(int sfd, struct sockaddr *addr){
         perror("Failed send message to socket");
         exit(EXIT_FAILURE);
     }
+
+    return 0;
 }
