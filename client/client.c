@@ -10,38 +10,43 @@
 #include "manage_clicon.h"
 
 int main(int agrc, char **argv){
-    const char *port = "8080";
+    int status;
     struct addrinfo hints;
-    struct addrinfo *res;
+    struct addrinfo *servinfo;
+
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET;
+    hints.ai_family   = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    
-    int getAddrInfoRet;
-    if ( (getAddrInfoRet = getaddrinfo(NULL, port, &hints, &res)) != 0 ){
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(getAddrInfoRet));
+
+    if ((status = getaddrinfo(NULL, "8080", &hints, &servinfo)) != 0 ) {
+        fprintf(stderr, "getaddrinfo error %s\n", gai_strerror(status));
+        exit(1);
+    }
+
+    int err, soc;
+    soc = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+    if (soc == -1) {
+        perror("Failed to allocate a socket");
         exit(EXIT_FAILURE);
     }
 
-    struct addrinfo *rp;
-    int sfd;
-    for (rp = res; rp != NULL; rp = rp->ai_next){
-        sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-        if (sfd == -1)
-            continue;
-
-        int conRet = connect(sfd, rp->ai_addr, rp->ai_addrlen);
-        if (conRet == -1){
-            perror("Failed to connect");
-            exit(EXIT_FAILURE);
-        }
-
-        // manage_connection(stf, rp->ai_addr, rp->ai_addrlen)
-        else manage_connection(sfd, rp->ai_addr);
-
-        close(sfd);
+    err = connect(soc, servinfo->ai_addr, servinfo->ai_addrlen);
+    if (err == -1){
+        perror("Failed to connect");
+        exit(EXIT_FAILURE);
     }
 
-    freeaddrinfo(res);
+    char BUF[1024];
+    // size_t BUF_LEN;
+    while (1){
+        scanf("%1023[^\n]", BUF);
+        // BUF_LEN = strlen(BUF);
+        // BUF[BUF_LEN]
+        send(soc, BUF, strlen(BUF), 0);
+        getchar();
+        memset(BUF, 0, 1024);
+    }
+    
+    
     return 0;
 }

@@ -10,5 +10,6 @@
 
 int manage_connection(int sfd, struct sockaddr *addr, socklen_t addrlen);
 int sanitize_input(char *userInput, int afd);
+int collect_input(int afd, char *buf, size_t BUF_SIZE);
 
 #endif // SERVER_CON
