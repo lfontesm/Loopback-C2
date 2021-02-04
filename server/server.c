@@ -54,22 +54,29 @@ int main(int argc, char **argv){
         exit(EXIT_FAILURE);
     }
 
-    struct sockaddr_storage their_addr;
-    socklen_t addrSize = sizeof their_addr;
-    int afd = accept(soc, (struct sockaddr *)&their_addr, &addrSize);
-
     freeaddrinfo(servinfo);
 
     char BUF[1024];
     int i;
-    while ((i = recv(afd, BUF, 1024, 0)), i != -1 && i != 0){
+    int afd;
+    struct sockaddr_storage their_addr;
+    socklen_t addrSize = sizeof their_addr;
+    accept_:
+    afd = accept(soc, (struct sockaddr *)&their_addr, &addrSize);
+    while (1){
+        i = recv(afd, BUF, 1024, 0);
+        if (i == -1 || i == 0)
+            continue;
         puts(BUF); 
         printf("%d\n",i);
+        if (strcmp("quit", BUF) == 0){
+            close(afd);
+            goto accept_;
+        }
         memset(BUF, 0, 1024);
         // recv(afd, BUF, 1024, 0);
     }
 
-    close(afd);
     
     return 0;
 }

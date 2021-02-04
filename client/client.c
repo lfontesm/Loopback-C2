@@ -7,7 +7,17 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <signal.h>
 #include "manage_clicon.h"
+
+int soc;
+
+void sigint_handler(int s){
+    printf("Received CTRL-C\n");
+    send(soc, "quit", 5, 0);
+    close(soc);
+    exit(1);
+}
 
 int main(int agrc, char **argv){
     int status;
@@ -23,7 +33,7 @@ int main(int agrc, char **argv){
         exit(1);
     }
 
-    int err, soc;
+    int err;
     soc = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
     if (soc == -1) {
         perror("Failed to allocate a socket");
@@ -36,12 +46,24 @@ int main(int agrc, char **argv){
         exit(EXIT_FAILURE);
     }
 
+    struct sigaction sigIntHandler;
+
+    sigIntHandler.sa_handler = sigint_handler;
+    sigemptyset(&sigIntHandler.sa_mask);
+    sigIntHandler.sa_flags = 0;
+
+    sigaction(SIGINT, &sigIntHandler, NULL);
+
     char BUF[1024];
     // size_t BUF_LEN;
+    // int i;
     while (1){
         scanf("%1023[^\n]", BUF);
         // BUF_LEN = strlen(BUF);
         // BUF[BUF_LEN]
+        // if (i == 0)
+        //     send(soc, '\xff', strlen(BUF), 0);
+
         send(soc, BUF, strlen(BUF), 0);
         getchar();
         memset(BUF, 0, 1024);
