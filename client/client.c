@@ -8,7 +8,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <signal.h>
-#include "manage_clicon.h"
+#include "rc4.h"
 
 int soc;
 
@@ -23,6 +23,7 @@ int main(int agrc, char **argv){
     int status;
     struct addrinfo hints;
     struct addrinfo *servinfo;
+    char *key = "LECNAAEAAE";
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family   = AF_INET;
@@ -53,19 +54,24 @@ int main(int agrc, char **argv){
     sigIntHandler.sa_flags = 0;
 
     sigaction(SIGINT, &sigIntHandler, NULL);
+    freeaddrinfo(servinfo);
 
     char BUF[1024];
-    // size_t BUF_LEN;
-    // int i;
     while (1){
         scanf("%1023[^\n]", BUF);
-        // BUF_LEN = strlen(BUF);
-        // BUF[BUF_LEN]
-        // if (i == 0)
-        //     send(soc, '\xff', strlen(BUF), 0);
-
-        send(soc, BUF, strlen(BUF), 0);
+        rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
+        ssize_t sendn = send(soc, BUF, strlen(BUF), 0);
+        if (sendn == -1){
+            perror("Failed to send");
+            exit(EXIT_FAILURE);
+        }
         getchar();
+        ssize_t recvn = recv(soc, BUF, strlen(BUF), 0);
+        if (recvn > 1) { 
+            close(soc);
+            exit(1);
+        }
+
         memset(BUF, 0, 1024);
     }
     

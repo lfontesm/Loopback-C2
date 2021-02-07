@@ -8,12 +8,13 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include "manage_secon.h"
+#include "rc4.h"
 
 int main(int argc, char **argv){
     int status;
     struct addrinfo hints;
     struct addrinfo *servinfo;
+    char *key = "LECNAAEAAE";
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family   = AF_INET;
@@ -61,22 +62,23 @@ int main(int argc, char **argv){
     int afd;
     struct sockaddr_storage their_addr;
     socklen_t addrSize = sizeof their_addr;
-    accept_:
-    afd = accept(soc, (struct sockaddr *)&their_addr, &addrSize);
-    while (1){
-        i = recv(afd, BUF, 1024, 0);
-        if (i == -1 || i == 0)
-            continue;
-        puts(BUF); 
-        printf("%d\n",i);
-        if (strcmp("quit", BUF) == 0){
-            close(afd);
-            goto accept_;
+    while ((afd = accept(soc, (struct sockaddr *)&their_addr, &addrSize)) != -1){
+        while (1){
+            i = recv(afd, BUF, 1024, 0);
+            rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
+            if (i == -1 || i == 0)
+                continue;
+            puts(BUF); 
+            // printf("%d\n",i);
+            if (strcmp("quit", BUF) == 0){
+                send(afd, "aa", 2, 0);
+                close(afd);
+                break;
+            }
+            send(afd, "a", 1, 0);
+            memset(BUF, 0, 1024);
         }
-        memset(BUF, 0, 1024);
-        // recv(afd, BUF, 1024, 0);
     }
-
     
     return 0;
 }
