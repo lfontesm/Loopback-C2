@@ -1,2 +1,4 @@
 server/*.bin
 client/*.bin
+client/.confjg
+.vscode
